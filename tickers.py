@@ -1,10 +1,12 @@
 import pandas as pd
 from collections import deque
+
 class Matrix:
     def __init__(self, df):
         # Keep the original DataFrame for reference
-        self.df = df
-        self.matrix = self._convert_to_matrix(df.copy())
+        self.headers = df.columns.tolist()
+        self.df = df.reset_index(drop=True)
+        self.matrix = self._convert_to_matrix(self.df.copy())
 
     def _convert_to_matrix(self, df):
         df = df.fillna(0)  # Replace NaN with -1
@@ -25,14 +27,14 @@ class Matrix:
 
     def get_currency(self, paths, row, col):
         # Get the base currency from the row index
-        base_currency = self.df.iloc[row, 0]  # Adjust as necessary if row index is not the currency
+        base_currency = self.df.iloc[row, col]  # Adjust as necessary if row index is not the currency
 
         # Get the quote currency from the column header
-        quote_currency = self.df.columns[col]  # Adjust as necessary if column headers are not the currency
+        quote_currency = self.headers[col]  # Adjust as necessary if column headers are not the currency
 
         return f"{base_currency}/{quote_currency}"
 
-    def bfs_traverse_matrix(self, start_row, start_col, max_length, conversion=True):
+    def get_arbitrage_paths(self, start_row, start_col, max_length, conversion=True):
         all_paths = []
 
         # Queue stores (current_position, path, move count, last_move_was_horizontal, path_visited)
@@ -89,13 +91,3 @@ class Matrix:
             if self.matrix[i][col] == 1 and (i, col) != current:
                 moves.append((i, col))
         return moves
-
-
-MEXC = Matrix(df)
-MEXC.print_df()
-
-results = MEXC.bfs_traverse_matrix(0, 0, 3, conversion=True)
-
-print("Traversal Results:")
-for path in results:
-    print(path)
