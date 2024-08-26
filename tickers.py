@@ -34,6 +34,14 @@ class Matrix:
 
         return f"{base_currency}/{quote_currency}"
 
+    def check_if_equal_to_base(self, start_col, row, col) -> bool:
+        quote_currency = self.headers[start_col]
+        base_currency = self.df.iloc[row, col]
+        if quote_currency == base_currency:
+            return True
+        else:
+            return False
+
     def get_arbitrage_paths(self, start_row, start_col, max_length, conversion=True):
         all_paths = []
 
@@ -48,6 +56,11 @@ class Matrix:
             if moves_count == max_length:
                 if col == start_col:
                     all_paths.append(path)
+
+                elif self.check_if_equal_to_base(start_col, row, col):
+                    # row.currency in current column equal to currency of starting header
+                    all_paths.append(path)
+
                 continue  # Stop exploring further for this path
 
             if last_move_was_horizontal:
